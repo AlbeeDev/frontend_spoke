@@ -1,10 +1,17 @@
 <script setup>
 import { Icon } from "@iconify/vue";
+import { defineProps } from "vue";
+
+const props = defineProps({
+  pfp: String, // Optional image source
+});
+
 </script>
 
 <template>
   <div class="iconbackground">
-    <Icon icon="gg:profile"  width="24" height="24"></Icon>
+    <img v-if="pfp" :src="pfp" alt="Profile Image" class="profile-img" width="30" height="30" />
+    <Icon v-else icon="gg:profile" width="24" height="24" />
   </div>
 </template>
 
@@ -20,5 +27,6 @@ import { Icon } from "@iconify/vue";
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
 </style>

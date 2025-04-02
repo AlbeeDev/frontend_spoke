@@ -10,6 +10,14 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  server:{
+    host: '0.0.0.0',
+    port: 8080,
+    allowedHosts: [
+      'mcnibuser.ddns.net',
+      'localhost'
+    ]
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

@@ -2,17 +2,18 @@
 
 import RoundIcon from "@/components/RoundIcon.vue";
 
-const { profileName, message } = defineProps({
+const { profileName, profileImage, message } = defineProps({
   profileName: String,
+  profileImage: String,
   message: String
 });
 
-console.log(profileName, message)
+console.log(profileName, profileImage, message)
 </script>
 
 <template>
 <div class="message-block">
-  <RoundIcon />
+  <RoundIcon :pfp="profileImage"/>
   <div class="message-sub">
     <h4>{{profileName}}</h4>
     <p>{{message}}</p>

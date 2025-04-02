@@ -2,9 +2,15 @@
 
 import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
-import {useRoute} from "vue-router";
-import {onBeforeMount, ref, watch} from "vue";
+import {useRoute, useRouter} from "vue-router";
+import {nextTick, onBeforeMount, onMounted, onUnmounted, ref, watch} from "vue";
 import MessageBlock from "@/components/MessageBlock.vue";
+import {socket} from "@/socket.js";
+
+import ringtoneFile from "@/assets/ringtone.mp3";
+import RoundIcon from "@/components/RoundIcon.vue";
+const ringtone = new Audio(ringtoneFile);
+ringtone.loop = true;
 
 const getData = (id) =>{
   const friends = JSON.parse(sessionStorage.getItem("friends"));
@@ -16,8 +22,11 @@ const getData = (id) =>{
     }
   }
 }
+
+let chatId = ref("");
 const getMessages = async (id,target) =>{
-  const res = await fetch("http://localhost:3000/api/chat/get", {
+  //TODO CHANGE
+  const res = await fetch("http://mcnibuser.ddns.net:3000/api/chat/get", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: id, target: target })
@@ -26,15 +35,23 @@ const getMessages = async (id,target) =>{
   const data = await res.json();
   console.log("Backend Response:", data);
   messages.value = data.messages;
+  chatId.value = data.chatId;
+  console.log("joining chat", chatId.value);
+  socket.emit("join chat", chatId.value);
   console.log(messages.value);
 }
 
 const user = JSON.parse(sessionStorage.getItem('userdata'));
 const route = useRoute();
+const router = useRouter();
 const profileId = ref(route.params.profileId);
 const profileName = ref('');
 const profileImage = ref('');
 const messages = ref([]);
+
+let newMessage = ref("")
+
+
 getData(profileId);
 //getMessages(user.googleId,profileId.value);
 watch(() => route.params.profileId, (newId) => {
@@ -51,6 +68,114 @@ onBeforeMount(async () => {
   console.log("beforeMount", user.googleId, profileId.value);
   await getMessages(user.googleId, profileId.value);
 })
+
+onMounted(() => {
+  socket.on("chat message", (msg) => {
+    messages.value.push(msg);
+    console.log(msg);
+  });
+  socket.on("request-call", ({from}) => {
+    if (from === user._id) {
+      console.log("Ignoring self-call request");
+      return;
+    }
+    callReceived.value = true;
+    console.log("call incoming, accept or deny call");
+    callResponsePromise.value = new Promise((resolve) => {
+      // You could use a UI element that triggers this when the user accepts or denies the call
+      // Assuming you have two buttons for accept and deny on the UI
+      nextTick(() => {
+        const acceptCallButton = document.querySelector(".accept-btn");
+        const denyCallButton = document.querySelector(".deny-btn");
+
+        console.log(acceptCallButton, denyCallButton);
+        // If the user accepts the call:
+        acceptCallButton.onclick = () => {
+          console.log("User accepted the call");
+          callAccepted.value = true;
+          resolve(true); // Resolve with accepted status
+
+
+        };
+
+        // If the user denies the call:
+        denyCallButton.onclick = () => {
+          console.log("User denied the call");
+          callAccepted.value = false;
+          resolve(false); // Resolve with denied status
+        };
+      });
+
+    });
+
+    // Wait for the user's decision (accept or deny)
+    callResponsePromise.value.then((accepted) => {
+      if (accepted) {
+        console.log("Call accepted by user. Proceeding...");
+        callerId.value = from;
+        socket.emit("reply-call", { from: user._id, to: chatId.value, accepted: true });
+        // Proceed with call setup, like starting the call, creating the offer, etc.
+        router.push('/home/call/'+callerId.value+'/'+chatId.value);
+      } else {
+        console.log("Call denied by user.");
+        socket.emit("reply-call", { from: user._id, to: chatId.value, accepted: false });
+        // Handle denied call (close the connection or clean up, etc.)
+      }
+    });
+  });
+  socket.on("reply-call", ({from, accepted}) => {
+    if (from === user._id) {
+      console.log("Ignoring self-call reply");
+      return;
+    }
+    callerId.value = user._id;
+    toggleCall()
+    router.push('/home/call/'+callerId.value+'/'+chatId.value);
+    console.log("reply-call", from, accepted);
+  });
+
+});
+
+// Cleanup when leaving the chat view
+onUnmounted(() => {
+  //console.log("leaving chat", chatId.value);
+  socket.off("chat message");
+  //socket.emit("leave chat", chatId.value);
+});
+
+const sendMessage = () => {
+  if (newMessage.value.trim() !== "") {
+    socket.emit("chat message", { content: newMessage.value, sender: user._id, senderName: user.username, senderPfp: user.pfp, chatId: chatId.value });
+    newMessage.value = "";
+  }
+};
+
+let callActive = ref(false);
+let callReceived = ref(false);
+const callAccepted = ref(false);
+const callResponsePromise = ref(null);
+let callerId = ref("");
+
+const toggleCall = async () => {
+  const cv = document.querySelector(".chat-view");
+  const btn = document.querySelector(".call-btn");
+  if(callActive.value){
+    cv.style.setProperty("--call-color", "chartreuse")
+    btn.style.animationPlayState = "paused";
+    ringtone.pause(); // Stop ringtone
+    ringtone.currentTime = 0;
+    callActive.value = false;
+  }else {
+    console.log("calling", chatId.value);
+    socket.emit("request-call", {from: user._id, to: chatId.value});
+    cv.style.setProperty("--call-color", "red")
+    btn.style.animationPlayState = "running";
+    await ringtone.play();
+    callActive.value = true;
+  }
+}
+
+
 </script>
 
 <template>
@@ -58,19 +183,25 @@ onBeforeMount(async () => {
     <div class="cv-header">
       <ProfileBlock :profile-id="profileId" :profile-name="profileName" :active="false"/>
       <h1>THIS IS PROFILE ID {{ profileId}}</h1>
-      <Icon icon="line-md:phone-call-filled" width="24" height="24"></Icon>
+      <button v-if="callReceived" class="accept-btn">
+        accept
+      </button>
+      <button v-if="callReceived" class="deny-btn">
+        deny
+      </button>
+      <button class="call-btn" @click="toggleCall"><Icon icon="line-md:phone-call-filled" width="24" height="24"></Icon></button>
     </div>
     <div class="cv-body">
       <div class="cv-messages">
         <div class="cv-message">
-          <MessageBlock v-for="message in messages" :key="message.id" :message="message.content" :profile-name="profileName"/>
+          <MessageBlock v-for="message in messages" :key="message.id" :message="message.content" :profile-name="message.senderName" :profile-image="message.senderPfp"/>
         </div>
       </div>
 
       <div class="separator" ></div>
       <div class="cv-input">
-        <h1>Chat</h1>
-        <Icon icon="material-symbols-light:send" width="24" height="24"></Icon>
+        <input placeholder="Enter Your Message" class="cv-input-box" autocomplete="off" v-model="newMessage" />
+        <button class="cv-send" @click="sendMessage"><Icon icon="material-symbols-light:send" width="24" height="24"></Icon></button>
       </div>
     </div>
   </div>
@@ -78,6 +209,7 @@ onBeforeMount(async () => {
 
 <style scoped>
   .chat-view {
+    --call-color: chartreuse;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -90,6 +222,26 @@ onBeforeMount(async () => {
     justify-content: space-between;
     padding: 0 10px;
   }
+  .call-btn{
+    background-color: transparent;
+    border-radius: 50px;
+    color: var(--call-color);
+    border: none;
+
+    animation: blink 1s ease infinite;
+    animation-play-state: paused;
+  }
+
+  .call-btn:hover{
+    scale: 1.1;
+  }
+
+  @keyframes blink {
+    50% {
+      scale: 1.2;
+    }
+  }
+
   .separator {
     height: 2px;
     width: 99%;
@@ -135,6 +287,24 @@ onBeforeMount(async () => {
   }
 
   .cv-messages::-webkit-scrollbar-thumb:hover {
-    background: #555; /* Darker color on hover */
+    background: #3e3e3e; /* Darker color on hover */
+  }
+
+  .cv-input-box{
+    background-color: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 16px;
+  }
+
+  .cv-send {
+    background-color: transparent;
+    border: none;
+    color: white;
+    border-radius: 50px;
+  }
+  .cv-send:hover {
+    background-color: #555;
   }
 </style>

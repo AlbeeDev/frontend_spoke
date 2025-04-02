@@ -9,7 +9,8 @@ const friend_requests = JSON.parse(sessionStorage.getItem("friend_requests") || 
 const username_req = ref('');
 
 const sendFriendRequest= async () => {
-  const res = await fetch("http://localhost:3000/api/friend/request", {
+  //TODO CHANGE
+  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/request", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId, username: username_req.value }),

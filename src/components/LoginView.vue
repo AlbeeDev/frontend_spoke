@@ -7,8 +7,8 @@
   async function handleLogin(response) {
     console.log("Google Response:", response)
     const idToken = response.credential;
-
-    const res = await fetch("http://localhost:3000/api/login/google", {
+    //TODO change
+    const res = await fetch("http://mcnibuser.ddns.net:3000/api/login/google", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: idToken })

@@ -7,6 +7,7 @@ import {ref, watch} from "vue";
 const { profileId, profileName, active, request } = defineProps({
   profileId: String,
   profileName: String,
+  profileImage: String,
   active: {type: Boolean, default: true},
   request: {type: Boolean, default: false}
 });
@@ -14,7 +15,8 @@ const { profileId, profileName, active, request } = defineProps({
 const requestReply = async (accepted) => {
   console.log(profileId);
   const user = JSON.parse(sessionStorage.getItem('userdata'));
-  const res = await fetch("http://localhost:3000/api/friend/reply", {
+  //TODO CHANGE
+  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/reply", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId, target: profileId , accepted: accepted }),
@@ -49,13 +51,13 @@ watch(() => profileId, (newProfileId) => {
 
 <template>
   <RouterLink v-if="active" :to="'/home/chat/'+profileId" class="profile-block">
-    <RoundIcon />
+    <RoundIcon :pfp="profileImage"/>
     <h4>{{profileName}}</h4>
 
   </RouterLink>
   <div v-else class="profile-block-d">
     <div class="pb-sub">
-      <RoundIcon />
+      <RoundIcon :pfp="profileImage"/>
       <h4>{{profileName}}</h4>
     </div>
     <div v-if="request" class="pb-sub">

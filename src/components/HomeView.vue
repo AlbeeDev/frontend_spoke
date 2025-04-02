@@ -6,6 +6,7 @@ import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
 import ChatView from "@/components/ChatView.vue";
 import {onBeforeMount, ref, watch} from "vue";
+import { socket } from "@/socket";
 
 console.log(sessionStorage.getItem('userdata'))
 const user = JSON.parse(sessionStorage.getItem('userdata'));
@@ -18,7 +19,8 @@ watch(friends, (newVal) => {
 }, { deep: true });
 
 onBeforeMount(async () => {
-  const res = await fetch("http://localhost:3000/api/friend/getAll", {
+  //TODO CHANGE
+  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/getAll", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId })
@@ -40,7 +42,7 @@ onBeforeMount(async () => {
     <div class="left-container">
       <div class="user-profile-control">
         <div class="user-block">
-          <RoundIcon />
+          <RoundIcon :pfp="user.pfp" />
           <h4>{{ user.username }}</h4>
         </div>
         <div class="control-block">
@@ -61,7 +63,7 @@ onBeforeMount(async () => {
       <h1 class="separator"></h1>
       <h4 class="title" style="text-align: center; margin-top: 10px">Personal Chats</h4>
       <div class="messages" >
-        <ProfileBlock v-for="friend in friends" :key="friend._id" :profile-id="friend._id" :profile-name="friend.username" />
+        <ProfileBlock v-for="friend in friends" :key="friend._id" :profile-id="friend._id" :profile-name="friend.username" :profile-image="friend.pfp"/>
       </div>
 
     </div>
