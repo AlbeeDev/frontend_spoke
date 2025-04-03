@@ -5,6 +5,7 @@ import LoginView from "@/components/LoginView.vue";
 import FriendView from "@/components/FriendView.vue";
 import ChatView from "@/components/ChatView.vue";
 import CallView from "@/components/CallView.vue";
+import SettingsView from "@/components/SettingsView.vue";
 
 const routes = [
     { path: '/', component: LoginView },
@@ -15,6 +16,7 @@ const routes = [
             { path: 'friends', component: FriendView },
             { path: 'chat/:profileId', component: ChatView },
             { path: 'call/:callerId/:chatId', component: CallView },
+            { path: 'settings', component: SettingsView },
         ]
     },
 ]

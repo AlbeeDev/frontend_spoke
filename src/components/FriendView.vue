@@ -10,7 +10,7 @@ const username_req = ref('');
 
 const sendFriendRequest= async () => {
   //TODO CHANGE
-  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/request", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/request`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId, username: username_req.value }),

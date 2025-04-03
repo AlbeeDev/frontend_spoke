@@ -2,7 +2,6 @@
 
 import {Icon} from "@iconify/vue";
 import RoundIcon from "@/components/RoundIcon.vue";
-import {ref, watch} from "vue";
 
 const { profileId, profileName, active, request } = defineProps({
   profileId: String,
@@ -16,7 +15,7 @@ const requestReply = async (accepted) => {
   console.log(profileId);
   const user = JSON.parse(sessionStorage.getItem('userdata'));
   //TODO CHANGE
-  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/reply", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/reply`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId, target: profileId , accepted: accepted }),

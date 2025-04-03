@@ -7,6 +7,8 @@ import vue3GoogleLogin from 'vue3-google-login'
 
 //client secret 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
 
+//import 'bootstrap/dist/css/bootstrap.min.css';
+//import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const app = createApp(App)
 app.use(router)

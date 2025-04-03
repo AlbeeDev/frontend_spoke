@@ -4,9 +4,7 @@ import RoundIcon from "@/components/RoundIcon.vue";
 import {RouterView} from "vue-router";
 import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
-import ChatView from "@/components/ChatView.vue";
 import {onBeforeMount, ref, watch} from "vue";
-import { socket } from "@/socket";
 
 console.log(sessionStorage.getItem('userdata'))
 const user = JSON.parse(sessionStorage.getItem('userdata'));
@@ -20,7 +18,7 @@ watch(friends, (newVal) => {
 
 onBeforeMount(async () => {
   //TODO CHANGE
-  const res = await fetch("http://mcnibuser.ddns.net:3000/api/friend/getAll", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: user.googleId })
@@ -33,8 +31,6 @@ onBeforeMount(async () => {
   sessionStorage.setItem('friend_requests', JSON.stringify(data.friend_req));
 })
 
-
-
 </script>
 
 <template>
@@ -44,6 +40,7 @@ onBeforeMount(async () => {
         <div class="user-block">
           <RoundIcon :pfp="user.pfp" />
           <h4>{{ user.username }}</h4>
+
         </div>
         <div class="control-block">
           <button class="control-btn">
@@ -52,9 +49,9 @@ onBeforeMount(async () => {
           <button class="control-btn">
             <Icon icon="ion:headset" width="24" height="24"></Icon>
           </button>
-          <button class="control-btn">
+          <RouterLink to="/home/settings">
             <Icon icon="weui:setting-filled" width="24" height="24"></Icon>
-          </button>
+          </RouterLink>
 
 
         </div>

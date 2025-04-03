@@ -7,9 +7,7 @@ export const state = reactive({
     barEvents: []
 });
 
-// "undefined" means the URL will be computed from the `window.location` object
-//TODO CHANGE
-const URL =  "http://mcnibuser.ddns.net:3000";
+const URL =  import.meta.env.VITE_BACKEND_URL;
 
 export const socket = io(URL, { withCredentials: true });
 

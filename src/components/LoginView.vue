@@ -1,14 +1,13 @@
 <script setup>
   import {GoogleLogin} from "vue3-google-login";
   import {useRouter} from "vue-router";
-  import {nextTick, onMounted} from "vue";
   const router = useRouter();
 
   async function handleLogin(response) {
     console.log("Google Response:", response)
     const idToken = response.credential;
     //TODO change
-    const res = await fetch("http://mcnibuser.ddns.net:3000/api/login/google", {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login/google`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: idToken })
@@ -153,7 +152,7 @@
 
   .line {
     height: 1px;
-    flex: 1 1 0%;
+    flex: 1 1 0;
     background-color: rgba(55, 65, 81, 1);
   }
 

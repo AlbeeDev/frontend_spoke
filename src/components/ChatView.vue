@@ -8,7 +8,6 @@ import MessageBlock from "@/components/MessageBlock.vue";
 import {socket} from "@/socket.js";
 
 import ringtoneFile from "@/assets/ringtone.mp3";
-import RoundIcon from "@/components/RoundIcon.vue";
 const ringtone = new Audio(ringtoneFile);
 ringtone.loop = true;
 
@@ -26,7 +25,7 @@ const getData = (id) =>{
 let chatId = ref("");
 const getMessages = async (id,target) =>{
   //TODO CHANGE
-  const res = await fetch("http://mcnibuser.ddns.net:3000/api/chat/get", {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chat/get`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: id, target: target })
@@ -57,7 +56,7 @@ getData(profileId);
 watch(() => route.params.profileId, (newId) => {
   profileId.value = newId;
   getData(profileId);
-  //getMessages(user.googleId,profileId.value);
+  getMessages(user.googleId,profileId.value);
 });
 
 watch(messages, (newVal) => {
