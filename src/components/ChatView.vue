@@ -11,8 +11,15 @@ import ringtoneFile from "@/assets/ringtone.mp3";
 const ringtone = new Audio(ringtoneFile);
 ringtone.loop = true;
 
-const getData = (id) =>{
-  const friends = JSON.parse(sessionStorage.getItem("friends"));
+const getData = async (id) =>{
+
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: id})
+  });
+  const data = await res.json();
+  const friends = JSON.parse(data.friends);
   for (const friend of friends) {
     if (friend._id === id.value) {
       profileName.value = friend.username;

@@ -7,7 +7,7 @@ const { profileId, profileName, active, request } = defineProps({
   profileId: String,
   profileName: String,
   profileImage: String,
-  active: {type: Boolean, default: true},
+  active: {type: Boolean, default: true}, //true button
   request: {type: Boolean, default: false}
 });
 

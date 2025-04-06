@@ -6,7 +6,7 @@ import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
 import {onBeforeMount, ref, watch} from "vue";
 
-console.log(sessionStorage.getItem('userdata'))
+console.log("session",sessionStorage.getItem('userdata'))
 const user = JSON.parse(sessionStorage.getItem('userdata'));
 console.log(user);
 
@@ -21,7 +21,7 @@ onBeforeMount(async () => {
   const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: user.googleId })
+    body: JSON.stringify({ id: user._id })
   });
 
   const data = await res.json();
