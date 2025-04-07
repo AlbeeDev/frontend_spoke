@@ -11,15 +11,17 @@ import ringtoneFile from "@/assets/ringtone.mp3";
 const ringtone = new Audio(ringtoneFile);
 ringtone.loop = true;
 
-const getData = async (id) =>{
+const fetchData = async (id) =>{
 
   const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: id})
   });
+  console.log("debug",await res.json());
   const data = await res.json();
-  const friends = JSON.parse(data.friends);
+  const { friends } = data;
+  friends = JSON.parse(friends);
   for (const friend of friends) {
     if (friend._id === id.value) {
       profileName.value = friend.username;
@@ -58,23 +60,18 @@ const messages = ref([]);
 let newMessage = ref("")
 
 
-getData(profileId);
-//getMessages(user.googleId,profileId.value);
+fetchData(profileId);
 watch(() => route.params.profileId, (newId) => {
   profileId.value = newId;
-  getData(profileId);
+  fetchData(profileId);
   getMessages(user.googleId,profileId.value);
 });
-
-watch(messages, (newVal) => {
-  console.log("Updated messages:", newVal);
-}, { deep: true });
-
+/*
 onBeforeMount(async () => {
   console.log("beforeMount", user.googleId, profileId.value);
   await getMessages(user.googleId, profileId.value);
 })
-
+*/
 onMounted(() => {
   socket.on("chat message", (msg) => {
     messages.value.push(msg);
@@ -142,11 +139,8 @@ onMounted(() => {
 
 });
 
-// Cleanup when leaving the chat view
 onUnmounted(() => {
-  //console.log("leaving chat", chatId.value);
   socket.off("chat message");
-  //socket.emit("leave chat", chatId.value);
 });
 
 const sendMessage = () => {
