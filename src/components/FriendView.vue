@@ -1,23 +1,17 @@
 <script setup>
 import ProfileBlock from "@/components/ProfileBlock.vue";
 import {ref} from "vue";
+import * as userApi from "@/api/userApi.js";
+import * as session from "@/session.js"
 
-const user = JSON.parse(sessionStorage.getItem('userdata'));
-const friends = JSON.parse(sessionStorage.getItem("friends") || "[]");
-const friend_requests = JSON.parse(sessionStorage.getItem("friend_requests") || "[]");
+const { user, friends, friend_requests } = session;
 
 const username_req = ref('');
 
 const sendFriendRequest= async () => {
-  //TODO CHANGE
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/request`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: user.googleId, username: username_req.value }),
-  });
-
-  const data = await res.json();
-  console.log(data);
+  const { message } = await userApi.sendFriendRequest(user._id, username_req.value);
+  //TODO check failed
+  console.log(message);
 }
 </script>
 

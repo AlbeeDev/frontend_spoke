@@ -1,13 +1,13 @@
 <script setup>
   import {GoogleLogin} from "vue3-google-login";
   import {useRouter} from "vue-router";
+  import * as session from "@/session.js";
   const router = useRouter();
 
   async function handleLogin(response) {
     console.log("Google Response:", response)
     const idToken = response.credential;
-    //TODO change
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login/google`, {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/login/google`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: idToken })
@@ -17,7 +17,7 @@
     console.log("Backend Response:", data);
 
     if(data.message === "successful"){
-      sessionStorage.setItem("userdata", JSON.stringify(data.user));
+      session.setUser(data.user);
       await router.push('/home/friends');
     }
   }

@@ -2,6 +2,8 @@
 
 import {Icon} from "@iconify/vue";
 import RoundIcon from "@/components/RoundIcon.vue";
+import * as userApi from "@/api/userApi.js";
+import * as session from "@/session.js";
 
 const { profileId, profileName, active, request } = defineProps({
   profileId: String,
@@ -13,16 +15,9 @@ const { profileId, profileName, active, request } = defineProps({
 
 const requestReply = async (accepted) => {
   console.log(profileId);
-  const user = JSON.parse(sessionStorage.getItem('userdata'));
-  //TODO CHANGE
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/reply`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: user.googleId, target: profileId , accepted: accepted }),
-  });
-
-  const data = await res.json();
-  console.log(data);
+  const { message } = await userApi.replyFriendRequest(session.user._id,profileId,accepted);
+  //TODO check failed
+  console.log(message);
 }
 /*
 const profileName = ref("");

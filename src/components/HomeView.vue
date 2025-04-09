@@ -5,10 +5,11 @@ import {RouterView} from "vue-router";
 import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
 import {onBeforeMount, ref, watch} from "vue";
+import * as userApi from "@/api/userApi.js";
+import * as session from "@/session.js";
 
-console.log("session",sessionStorage.getItem('userdata'))
-const user = JSON.parse(sessionStorage.getItem('userdata'));
-console.log(user);
+const { user } = session
+console.log("user session",user)
 
 const friends = ref([])
 
@@ -17,18 +18,10 @@ watch(friends, (newVal) => {
 }, { deep: true });
 
 onBeforeMount(async () => {
-  //TODO CHANGE
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: user._id })
-  });
-
-  const data = await res.json();
-  console.log("Backend Response:", data);
-  friends.value = data.friends;
-  sessionStorage.setItem('friends', JSON.stringify(data.friends));
-  sessionStorage.setItem('friend_requests', JSON.stringify(data.friend_req));
+  const { friends, friend_req } = await userApi.getAllFriendsFromUserId(user._id)
+  friends.value = friends;
+  session.setFriends(friends);
+  session.setFriendRequests(friend_req);
 })
 
 </script>

@@ -1,7 +1,8 @@
 <script setup>
-import {socket} from "@/socket.js";
+import {socket} from "@/api/socket.js";
 import {onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
+import * as session from "@/session.js";
 
 const localStream = ref(null);
 const remoteStream = ref(new MediaStream());
@@ -16,8 +17,7 @@ const iceServers = {
 
 const route = useRoute();
 const chatId = ref(route.params.chatId);
-const user = JSON.parse(sessionStorage.getItem('userdata'));
-const userId = user._id;
+const userId = session.user._id;
 const callerId = ref(route.params.callerId);
 const inputDeviceName = ref("");
 const inputDeviceId = ref("");

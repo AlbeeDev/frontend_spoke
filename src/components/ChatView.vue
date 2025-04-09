@@ -5,7 +5,10 @@ import {Icon} from "@iconify/vue";
 import {useRoute, useRouter} from "vue-router";
 import {nextTick, onBeforeMount, onMounted, onUnmounted, ref, watch} from "vue";
 import MessageBlock from "@/components/MessageBlock.vue";
-import {socket} from "@/socket.js";
+import {socket} from "@/api/socket.js";
+import * as userApi from "@/api/userApi.js";
+import * as chatApi from "@/api/chatApi.js";
+import * as session from "@/session.js";
 
 import ringtoneFile from "@/assets/ringtone.mp3";
 const ringtone = new Audio(ringtoneFile);
@@ -13,15 +16,7 @@ ringtone.loop = true;
 
 const fetchData = async (id) =>{
 
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/friend/getAll`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: id})
-  });
-  console.log("debug",await res.json());
-  const data = await res.json();
-  const { friends } = data;
-  friends = JSON.parse(friends);
+  const { friends } = await userApi.getAllFriendsFromUserId(id)
   for (const friend of friends) {
     if (friend._id === id.value) {
       profileName.value = friend.username;
@@ -33,23 +28,15 @@ const fetchData = async (id) =>{
 
 let chatId = ref("");
 const getMessages = async (id,target) =>{
-  //TODO CHANGE
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/chat/get`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: id, target: target })
-  });
-
-  const data = await res.json();
-  console.log("Backend Response:", data);
-  messages.value = data.messages;
-  chatId.value = data.chatId;
+  const { messages, chatId } = await chatApi.getChat(id,target);
+  messages.value = messages;
+  chatId.value = chatId;
   console.log("joining chat", chatId.value);
   socket.emit("join chat", chatId.value);
   console.log(messages.value);
 }
 
-const user = JSON.parse(sessionStorage.getItem('userdata'));
+const user = session.user
 const route = useRoute();
 const router = useRouter();
 const profileId = ref(route.params.profileId);
@@ -64,7 +51,7 @@ fetchData(profileId);
 watch(() => route.params.profileId, (newId) => {
   profileId.value = newId;
   fetchData(profileId);
-  getMessages(user.googleId,profileId.value);
+  getMessages(user._id,profileId.value);
 });
 /*
 onBeforeMount(async () => {
