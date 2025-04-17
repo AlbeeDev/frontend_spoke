@@ -8,19 +8,19 @@ import {onBeforeMount, ref, watch} from "vue";
 import * as userApi from "@/api/userApi.js";
 import * as session from "@/session.js";
 
-const { user } = session
+const user = session.getUser();
 console.log("user session",user)
 
-const friends = ref([])
+const friends = ref([]);
 
 watch(friends, (newVal) => {
   console.log("Updated friends:", newVal);
 }, { deep: true });
 
 onBeforeMount(async () => {
-  const { friends, friend_req } = await userApi.getAllFriendsFromUserId(user._id)
-  friends.value = friends;
-  session.setFriends(friends);
+  let friend_req;
+  ({ friends: friends.value, friend_req } = await userApi.getAllFriendsFromUserId(user._id));
+  session.setFriends(friends.value);
   session.setFriendRequests(friend_req);
 })
 
@@ -33,7 +33,6 @@ onBeforeMount(async () => {
         <div class="user-block">
           <RoundIcon :pfp="user.pfp" />
           <h4>{{ user.username }}</h4>
-
         </div>
         <div class="control-block">
           <button class="control-btn">

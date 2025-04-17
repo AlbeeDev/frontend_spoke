@@ -1,4 +1,14 @@
-const url = import.meta.env.VITE_BACKEND_URL
+const url = import.meta.env.VITE_BACKEND_URL+"/api"
+
+export async function getUser(id) {
+    const res = await fetch(`${url}/user/get`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    return await res.json();
+}
 
 export async function getAllFriendsFromUserId(id){
     const res = await fetch(`${url}/friend/getAll`, {

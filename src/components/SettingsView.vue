@@ -4,7 +4,7 @@ import {ref} from "vue";
 import * as userApi from "@/api/userApi.js";
 import * as session from "@/session.js";
 
-const user = session.user;
+const user = session.getUser();
 console.log(user);
 
 const username = ref(user.username);
@@ -32,7 +32,7 @@ const handlePfpChange = async (e) => {
   const formData = new FormData();
   formData.append("image", file);
 
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/settings/uploadImage`, {
+  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/settings/uploadImage`, {
     method: "POST",
     contentType: "application/json",
     body: formData
@@ -41,6 +41,7 @@ const handlePfpChange = async (e) => {
   const { url } = await res.json();
   console.log(url);
   pfp.value = url;
+  session.getUser().pfp = pfp.value;
 }
 
 </script>
@@ -51,12 +52,12 @@ const handlePfpChange = async (e) => {
 
     <!-- Profile Picture -->
     <div class="mb-3 text-center">
-      <img id="profilePicPreview" :src="pfp" class="rounded-circle border" width="120" height="120" alt="Profile Picture">
+      <img id="profilePicPreview" :src="pfp" class="rounded-circle border" width="120" height="120" :alt="pfp">
       <div class="mt-2">
         <label for="profilePicInput" class="btn btn-outline-primary btn-sm">
           Change Profile Picture
         </label>
-        <input type="file" id="profilePicInput" class="d-none disabled" disabled @change="handlePfpChange">
+        <input type="file" id="profilePicInput" class="d-none" @change="handlePfpChange">
       </div>
     </div>
 

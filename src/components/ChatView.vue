@@ -3,7 +3,7 @@
 import ProfileBlock from "@/components/ProfileBlock.vue";
 import {Icon} from "@iconify/vue";
 import {useRoute, useRouter} from "vue-router";
-import {nextTick, onBeforeMount, onMounted, onUnmounted, ref, watch} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import MessageBlock from "@/components/MessageBlock.vue";
 import {socket} from "@/api/socket.js";
 import * as userApi from "@/api/userApi.js";
@@ -14,29 +14,20 @@ import ringtoneFile from "@/assets/ringtone.mp3";
 const ringtone = new Audio(ringtoneFile);
 ringtone.loop = true;
 
-const fetchData = async (id) =>{
-
-  const { friends } = await userApi.getAllFriendsFromUserId(id)
-  for (const friend of friends) {
-    if (friend._id === id.value) {
-      profileName.value = friend.username;
-      profileImage.value = friend.pfp;
-      break;
-    }
-  }
+const fetchFriendData = async (id) =>{
+  const { user } = await userApi.getUser(id)
+  profileName.value = user.username;
+  profileImage.value = user.pfp;
 }
 
 let chatId = ref("");
-const getMessages = async (id,target) =>{
-  const { messages, chatId } = await chatApi.getChat(id,target);
-  messages.value = messages;
-  chatId.value = chatId;
+const getMessages = async (userid,target) =>{
+  ({ messages: messages.value, chatId: chatId.value } = await chatApi.getChat(userid,target));
   console.log("joining chat", chatId.value);
   socket.emit("join chat", chatId.value);
-  console.log(messages.value);
 }
 
-const user = session.user
+const user = session.getUser()
 const route = useRoute();
 const router = useRouter();
 const profileId = ref(route.params.profileId);
@@ -47,11 +38,13 @@ const messages = ref([]);
 let newMessage = ref("")
 
 
-fetchData(profileId);
+fetchFriendData(profileId.value);
+getMessages(user._id,profileId.value);
 watch(() => route.params.profileId, (newId) => {
   profileId.value = newId;
-  fetchData(profileId);
+  fetchFriendData(profileId.value);
   getMessages(user._id,profileId.value);
+
 });
 /*
 onBeforeMount(async () => {
@@ -168,8 +161,8 @@ const toggleCall = async () => {
 <template>
   <div class="chat-view">
     <div class="cv-header">
-      <ProfileBlock :profile-id="profileId" :profile-name="profileName" :active="false"/>
-      <h1>THIS IS PROFILE ID {{ profileId}}</h1>
+      <ProfileBlock :profile-id="profileId" :profile-name="profileName" :profile-image="profileImage" :active="false"/>
+      <h1>PROFILE ID {{ profileId }}</h1>
       <button v-if="callReceived" class="accept-btn">
         accept
       </button>

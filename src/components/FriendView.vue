@@ -4,7 +4,9 @@ import {ref} from "vue";
 import * as userApi from "@/api/userApi.js";
 import * as session from "@/session.js"
 
-const { user, friends, friend_requests } = session;
+const user = session.getUser()
+const friends = session.getFriends()
+const friend_requests = session.getFriendRequests()
 
 const username_req = ref('');
 

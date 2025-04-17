@@ -5,7 +5,7 @@ import RoundIcon from "@/components/RoundIcon.vue";
 import * as userApi from "@/api/userApi.js";
 import * as session from "@/session.js";
 
-const { profileId, profileName, active, request } = defineProps({
+let { profileId, profileName, profileImage, active, request } = defineProps({
   profileId: String,
   profileName: String,
   profileImage: String,
@@ -13,15 +13,18 @@ const { profileId, profileName, active, request } = defineProps({
   request: {type: Boolean, default: false}
 });
 
+console.log("debug",profileId, profileName);
+
 const requestReply = async (accepted) => {
   console.log(profileId);
-  const { message } = await userApi.replyFriendRequest(session.user._id,profileId,accepted);
+  const { message } = await userApi.replyFriendRequest(session.getUser()._id,profileId,accepted);
   //TODO check failed
   console.log(message);
 }
 /*
 const profileName = ref("");
 const profileImage = ref("");
+
 const friends = JSON.parse(sessionStorage.getItem("friends") || "[]");
 
 function updateProfileData(id) {
@@ -33,14 +36,17 @@ function updateProfileData(id) {
     }
   }
 }
-
 updateProfileData(profileId);
 
-watch(() => profileId, (newProfileId) => {
-  updateProfileData(newProfileId);
+watch(() => profileId, async (newProfileId) => {
+  //updateProfileData(newProfileId);
+  const { user } = await userApi.getUser(newProfileId);
+  profileName = user.username;
+  profileImage = user.pfp;
+  console.log("newProfileId", newProfileId, user);
 });
-
  */
+
 </script>
 
 <template>
