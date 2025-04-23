@@ -10,11 +10,12 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  base: '/frontend_spoke',
   server:{
     host: '0.0.0.0',
     port: 8080,
     allowedHosts: [
-      'mcnibuser.ddns.net',
+      'albeelocal.ddns.net',
       'localhost'
     ]
   },
